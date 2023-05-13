@@ -1,0 +1,52 @@
+﻿@page "/Admin/delete-product/{id:int}"
+@using Expert.WebShop.Vjezbe.models;
+@inject HttpClient httpClient;
+@inject NavigationManager navManager;
+
+
+
+
+<h3 class="bg-danger text-dark font-weight-bold p-2"> Delete Product </h3>
+
+<div>
+  @products.ProductName
+  <br/>
+  @products.ProductDescription
+    <br />
+    @products.ProductPrice
+    <br />
+    @products.Discount
+    <br />
+    <button type="button" class="btn-danger" @onclick="()=>DeleteProd(products.Id)">
+        Obriši
+    </button>
+
+</div>
+
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Products products = new Products();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await httpClient.GetAsync($"https://expertshopapi.azurewebsites.net/api/Products/{Id}");
+        if(result.IsSuccessStatusCode)
+        {
+            products = await result.Content.ReadFromJsonAsync<Products>();
+        }
+    }
+
+    private async Task DeleteProd(int id)
+    {
+        var result = await httpClient.DeleteAsync($"https://expertshopapi.azurewebsites.net/api/Products/{id}");
+        if(result.IsSuccessStatusCode)
+        {
+            navManager.NavigateTo("Admin/product-list");
+        }
+    }
+
+
+ }

@@ -1,0 +1,77 @@
+﻿@page "/category/{id:int}/{CategoryName}"  
+@using Expert.WebShop.Vjezbe.models;
+@inject HttpClient httpClient;
+@inject NavigationManager navManager;
+
+<h2 class="bg-info text-dark font-weight-bold p-2">CategoryProduct</h2>
+
+<div>
+    ID: @category.Id
+
+    <h1>@category.CategoryName</h1>
+
+<p>@category.CategoryDescription</p>
+
+    @foreach(var item in products)  
+    {
+        <div>
+            @item.ProductName
+            <br>
+            @item.ProductDescription
+            <br>
+            @item.ProductPrice
+          
+
+    </div>
+
+    }
+
+
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set;}
+    [Parameter]
+    public string CategoryName { get; set;}
+
+    private Category category = new Category();
+    private List<Products> products = new List<Products>();
+    protected override async Task OnInitializedAsync()
+    {
+        category = await GetCategory(Id);
+        products = await GetProducts(Id);
+        navManager.LocationChanged += LocationChanged;
+
+    }    
+
+    public async Task<Category> GetCategory(int categoryId)
+    {
+        var result = await httpClient.GetAsync($"https://expertshopapi.azurewebsites.net/api/Categories/{Id}");
+        if (result.IsSuccessStatusCode)
+        {
+            category = await result.Content.ReadFromJsonAsync<Category>();
+        }
+        return category;
+    }
+
+    public async Task<List<Products>>GetProducts(int categoryId)
+    {
+        var proizvodiresult = await httpClient.GetAsync($"https://expertshopapi.azurewebsites.net/api/Products/category-products/{Id}");
+        if (proizvodiresult.IsSuccessStatusCode)
+        {
+            products = await proizvodiresult.Content.ReadFromJsonAsync<List<Products>>();
+        }
+        return products;
+    }
+
+
+    async void LocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        category = await GetCategory(Id);
+        products = await GetProducts(Id);
+        StateHasChanged();
+    }
+
+   
+}

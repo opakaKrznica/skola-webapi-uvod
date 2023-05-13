@@ -1,0 +1,75 @@
+﻿@page "/Admin/add-category"
+@using Expert.WebShop.Vjezbe.models;
+@inject HttpClient httpClient;
+@inject NavigationManager navManager;
+
+
+<h3 class="bg-info text-dark p-2">Add Category</h3>
+
+@if (IsError)
+{
+    <div>Ups dogodila se greška!</div>
+}
+
+<form @onsubmit="CategoryAdd">
+   <div class="container bg-secondary text-light p-3 mt-2">
+
+    <div class="row g-2">         
+                        
+        <div class="col-3">
+            <input type="text" class="form-control" placeholder="ID" aria-label="ID">
+        </div>
+
+        <div class="col-12">
+            <input type="text"  @bind-value="category.CategoryName" class="form-control" placeholder="Category Name" aria-label="Name">
+        </div>
+
+        <div class="col-sm-12">
+        <input type="text" @bind-value="category.CategoryDescription" class="form-control" placeholder="Category Description" aria-label="Description">
+         </div>
+
+            <div class="row g-2">
+               
+         <div class="col-4 pt-3">
+        <div class="form-check">
+        <input class="form-check-input" @bind-value="category.IsHidden"  type="checkbox"  id="inlineCheckbox1" >
+        <label class="form-check-label" for="inlineCheckbox1">It is hidden!</label>
+        </div>
+                <div class="col-7 ">
+                    <input type="url" @bind-value="category.ImagePath" class="form-control " id="ImagePath">
+                    </div>
+
+          <div class="col-6 pt-3">
+          <button type="submit"  class="btn btn-info">Add New</button>
+
+        </div>
+        <div/>
+        </div>
+      </div>
+    </div>
+    </div>
+</form>
+
+
+
+
+@code {
+    private Category category = new Category();
+    private bool IsError = false;
+
+    private async Task CategoryAdd()
+    {
+        var result = await httpClient.PostAsJsonAsync("https://expertshopapi.azurewebsites.net/api/Categories" , category);
+
+        if (result.IsSuccessStatusCode)
+        {
+            navManager.NavigateTo("Admin/category-list");
+        }
+        else
+        {
+            IsError = true;
+            StateHasChanged();
+        }
+    }
+
+}

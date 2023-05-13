@@ -1,0 +1,64 @@
+﻿@page "/Admin/files-update/{id:int}"
+@inject HttpClient Http
+@using System.IO
+@using Expert.WebShop.Vjezbe.models;
+
+<div class="bg-info text-dark font-weight-bolder p-3">
+<h3 class="pt-2">Update files</h3>
+</div>
+
+<form class="m-4" @onsubmit="OnSubmit">
+
+    <InputFile OnChange="OnInputFileChange" multiple />
+
+
+    <br /><br /><br />
+    <button type="submit">Upload Selected File(s)</button>
+</form>
+
+<div class="m-4"> Uploaded Images</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    string Message = "No file(s) selected";
+    IReadOnlyList<IBrowserFile> selectedFiles;
+
+
+
+
+    private void OnInputFileChange
+    (InputFileChangeEventArgs e)
+    {
+        selectedFiles = e.GetMultipleFiles();
+        Message = $"{selectedFiles.Count} file(s) selected";
+        this.StateHasChanged();
+    }
+
+    private async void OnSubmit()
+    {
+        foreach (var file in selectedFiles)
+        {
+            Stream stream = file.OpenReadStream();
+            MemoryStream ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            stream.Close();
+
+            UploadedFiles uploadFile = new UploadedFiles();
+            uploadFile.FileName = file.Name;
+            uploadFile.ProductId = Id;
+            uploadFile.FileContent = ms.ToArray();
+            ms.Close();
+
+            var upload = await Http.PostAsJsonAsync<UploadedFiles>
+    ("https://expertshopapi.azurewebsites.net/api/FileUpload", uploadFile);
+
+            if (upload.IsSuccessStatusCode)
+            {
+                var a = "test";
+            }
+        }
+        Message = $"{selectedFiles.Count} file(s) uploaded on server";
+        this.StateHasChanged();
+    }
+}

@@ -1,0 +1,41 @@
+﻿@page "/product-details/{id:int}"  
+@inject HttpClient httpClient;
+@inject NavigationManager navManager;
+@inject ShoppingCartInMemory shoppingCart;
+@using models;
+
+
+<h3 class="bg-info text-dark font-weight-bold p-2">Details</h3>
+<br /> 
+<p>@productDetails.ProductName</p>
+<br/>
+<p>@productDetails.ProductDescription</p>
+<br />
+<p>@productDetails.ProductPrice</p>
+<br />
+<p>@productDetails.Discount</p>
+<br />
+<button class="btn btn-info" @onclick="()=>shoppingCart.AddToShoppingCart(productDetails.Id, navManager)" >Dodaj u košaricu</button>
+
+
+
+
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    private Products productDetails = new Products();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await httpClient.GetAsync($"https://expertshopapi.azurewebsites.net/api/Products/{Id}");
+        if (result.IsSuccessStatusCode)
+        {
+            productDetails = await result.Content.ReadFromJsonAsync<Products>();
+        }
+    }
+
+
+
+
+}

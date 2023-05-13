@@ -1,0 +1,96 @@
+﻿
+@page "/Admin/edit-product/{id:int}"
+@using Expert.WebShop.Vjezbe.models;
+@inject HttpClient httpClient;
+@inject NavigationManager navManager;
+
+
+<h3 class="bg-info text-dark font-weight-bold p-2">Edit Product</h3>
+
+<form @onsubmit="ProductEdit">
+    <div class="container bg-secondary text-light p-3 mt-2">
+
+        <div class="row g-2">
+
+            <div class="col-2 offset-1 ">
+                <label class="form-check-label" for="CategoryId">
+                    Category Id
+                </label>
+            </div>
+
+            <div class="col-2  ">
+                <input type="number" @bind-value="products.CategoryId" class="form-control" placeholder="CategoryId" aria-label="CategoryId">
+            </div>
+
+            <div class="col-12 ">
+                <input type="text" @bind-value="products.ProductName" class="form-control" placeholder="Product Name" aria-label="Name">
+            </div>
+
+            <div class="col-sm-12">
+                <input type="text" @bind-value="products.ProductDescription" class="form-control" placeholder="Product Description" aria-label="Description">
+            </div>
+
+            <div class="col-sm-6">
+                <label class="form-check-label" for="Price">
+                    Product Price
+                </label>
+                <input type="number" @bind-value="products.ProductPrice" class="form-control" placeholder="Product Price" aria-label="Price" />
+            </div>
+
+            <div class="col-sm-6">
+                <label class="form-check-label" for="Discount">
+                    Product Discount
+                </label>
+
+                <input type="number" @bind-value="products.Discount" class="form-control" placeholder="Product Discount" aria-label="Discount" />
+            </div>
+
+
+            <div class="col-7 ">
+                <input type="url" @bind-value="products.ImagePath" class="form-control " id="ImagePath" placeholder="Image">
+            </div>
+
+            <div class="col-6 pt-3">
+                <button type="submit" class="btn btn-info">Add New</button>
+
+            </div>
+            <div />
+        </div>
+    </div>
+
+</form>
+
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Products products = new Products();
+
+    private bool IsError = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await httpClient.GetAsync($"https://expertshopapi.azurewebsites.net/api/Products/{Id}");
+        if (result.IsSuccessStatusCode)
+        {
+            products = await result.Content.ReadFromJsonAsync<Products>();
+        }
+    }
+
+    private async Task ProductEdit()
+    {
+        var result = await httpClient.PutAsJsonAsync($"https://expertshopapi.azurewebsites.net/api/Products/{Id}", products);
+        if (result.IsSuccessStatusCode)
+        {
+            navManager.NavigateTo("/Admin/product-list");
+        }
+        else
+        {
+            IsError = true;
+            StateHasChanged();
+        }
+    }
+
+
+}

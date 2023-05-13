@@ -1,0 +1,119 @@
+﻿@page "/Admin/product-list"
+@using Expert.WebShop.Vjezbe.models;
+@inject HttpClient httpClient;
+@inject NavigationManager navManager;
+
+<div class="bg-info text-dark font-weight-bolder p-2  d-flex justify-content-between">
+<h3 class="pt-2">Product List</h3>
+
+<button type="button" @onclick="AddProduct" class="btn btn-secondary">Add New</button>
+</div>
+
+<div class="d-flex justify-content-center  bg-secondary">
+    <ul class="list-unstyled mt-3">
+    @foreach (Products item in product)   //ovdje ide var item inace
+    {
+        <li>
+            <div class="container">
+                <div class="card" style="width:18rem">
+                    <div>
+                        @{
+                            var images = productImages.Where(x => x.ProductId == item.Id).ToList();
+                            foreach (var image in images)
+                            {
+                                <img class="card-img-top img-thumbnail" src=@image.imagePath alt="neka slika..">
+                            }
+
+                        }
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            @item.ProductName
+                        </h5>
+                        <p class="card-text">
+                            @item.ProductDescription
+                        </p>
+
+                        <p class="card-text">
+                            Price: @item.ProductPrice
+                        </p>
+
+                        <p class="card-text">
+                            Discount:@item.Discount
+                        </p>
+
+                        <button type="button" @onclick="()=>EditProd(item.Id)" class="btn btn-info px-2">Edit</button>
+                        <button type="button" @onclick="()=>DeleteProd(item.Id)" class="btn btn-danger">Delete</button>
+                        <button type="button" @onclick="()=>UpdateFiles(item.Id)" class="btn btn-warning">Update Img.</button>
+
+                    </div>
+                    <br>
+                    <button type="button" class="btn btn-success p-2" @onclick="()=>GoToDetails(item.Id)">DETALJI</button>
+                </div>
+            </div>
+        </li>
+        <br />
+        <br />
+    }
+    </ul>
+</div>
+
+
+@code {
+    private List<Products> product = new List<Products>();
+    private List<ImageFilePath> productImages = new List<ImageFilePath>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await httpClient.GetAsync("https://expertshopapi.azurewebsites.net/api/Products");
+
+        if (result.IsSuccessStatusCode)
+        {
+            product = await result.Content.ReadFromJsonAsync<List<Products>>();
+
+            foreach (var item in product)
+            {
+                var getImg = await GetImages(item.Id);
+                productImages.AddRange(getImg);
+            }
+        }
+    }
+
+    public async Task<List<ImageFilePath>> GetImages(int Id)
+    {
+        var apiResult = await httpClient.GetAsync($"https://expertshopapi.azurewebsites.net/api/FileUpload/GetProductPhotos/{Id}");
+        var images = new List<ImageFilePath>();
+        if (apiResult.IsSuccessStatusCode)
+        {
+            images = await apiResult.Content.ReadFromJsonAsync<List<ImageFilePath>>();
+        }
+        return images;
+    }
+
+
+    public async void AddProduct()
+    {
+        navManager.NavigateTo("/Admin/add-product");
+    }
+
+    public async void DeleteProd(int Id)
+    {
+        navManager.NavigateTo($"/Admin/delete-product/{Id}");
+    }
+
+    public async void EditProd(int Id)
+    {
+        navManager.NavigateTo($"/Admin/edit-product/{Id}");
+    }
+
+    async void GoToDetails(int Id)
+    {
+        navManager.NavigateTo($"/product-details/{Id}");
+    }
+
+    async void UpdateFiles(int Id)
+    {
+        navManager.NavigateTo($"/Admin/files-update/{Id}");
+    }
+
+}

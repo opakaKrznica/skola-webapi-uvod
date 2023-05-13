@@ -1,0 +1,92 @@
+﻿@page "/Admin/edit-category/{id:int}"
+@using Expert.WebShop.Vjezbe.models;
+@inject HttpClient httpClient;
+@inject NavigationManager navManager;
+
+
+<h3 class="bg-info text-dark p-3">Edit Category</h3>
+
+<form @onsubmit="CategoryEdit">
+    <div class="container bg-secondary text-light p-3 mt-2">
+
+        <div class="row g-2">
+
+
+            <div class="col-3">
+                <input type="text" class="form-control" placeholder="ID" aria-label="ID">
+            </div>
+
+            <div class="col-12">
+                <input type="text" @bind-value="category.CategoryName" class="form-control" placeholder="Category Name" aria-label="Name">
+            </div>
+
+            <div class="col-sm-12">
+                <input type="text" @bind-value="category.CategoryDescription" class="form-control" placeholder="Category Description" aria-label="Description">
+            </div>
+
+            <div class="col-12 pt-3">
+                <div class="form-check">
+                    <input class="form-check-input" @bind-value="category.IsHidden" type="checkbox" id="inlineCheckbox1">
+                    <label class="form-check-label" for="inlineCheckbox1">It is hidden!</label>
+                </div>
+                <br />
+                <div class="row g-4">
+                    <div class="col-6">
+                        <input type="url" @bind-value="category.ImagePath" class="form-control" placeholder="Choose Imgage" id="ImagePath">
+                    </div>
+                    <div class="col-3">
+                        <button type="submit" class="btn btn-info ">Add New</button>
+                    </div>
+                    <div class="col-3">
+                        <button type="button" class=" btn btn-info  p-2" @onclick="Return">
+                            Povratak
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Category category = new Category();
+
+    private bool IsError = false;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await httpClient.GetAsync($"https://expertshopapi.azurewebsites.net/api/Categories/{Id}");
+        if (result.IsSuccessStatusCode)
+        {
+            category = await result.Content.ReadFromJsonAsync<Category>();
+        }
+    }
+
+
+
+    private async Task CategoryEdit()
+    {
+        var result = await httpClient.PutAsJsonAsync($"https://expertshopapi.azurewebsites.net/api/Categories/{Id}", category);
+
+        if (result.IsSuccessStatusCode)
+        {
+            navManager.NavigateTo("Admin/category-list");
+        }
+        else
+        {
+            IsError = true;
+            StateHasChanged();
+        }
+    }
+
+    private async void Return()
+    {
+        navManager.NavigateTo("/Admin/category-list");
+    }
+}
