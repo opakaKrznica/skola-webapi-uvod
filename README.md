@@ -1,3 +1,3 @@
 # skola-webapi-uvod
 Učenje
-mpuno će ga biti
+puno će ga biti
